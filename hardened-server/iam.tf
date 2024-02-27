@@ -18,7 +18,7 @@ resource "aws_iam_policy" "ssm_session_manager_policy" {
           "ssm:ResumeSession",
           "ssm:DescribeSessions"
         ],
-        Resource = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:session/${aws_iam_user.ivan.name}-*"
+        Resource = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:session/${aws_iam_user.ivan1.name}-*"
       },
       {
         Effect = "Allow",
@@ -33,8 +33,8 @@ resource "aws_iam_policy" "ssm_session_manager_policy" {
   })
 }
 
-resource "aws_iam_user" "ivan" {
-  name = "ivan"
+resource "aws_iam_user" "ivan1" {
+  name = "ivan1"
   path = "/"
 }
 
@@ -43,8 +43,8 @@ resource "aws_iam_user" "assessment" {
   path = "/"
 }
 
-resource "aws_iam_user_policy_attachment" "ivan_ssm_attachment" {
-  user       = aws_iam_user.ivan.name
+resource "aws_iam_user_policy_attachment" "ivan1_ssm_attachment" {
+  user       = aws_iam_user.ivan1.name
   policy_arn = aws_iam_policy.ssm_session_manager_policy.arn
 }
 
@@ -53,8 +53,8 @@ resource "aws_iam_user_policy_attachment" "assessment_ssm_attachment" {
   policy_arn = aws_iam_policy.ssm_session_manager_policy.arn
 }
 
-output "ivan_user" {
-  value = aws_iam_user.ivan.name
+output "ivan1_user" {
+  value = aws_iam_user.ivan1.name
 }
 
 output "assessment_user" {

@@ -109,3 +109,16 @@ resource "aws_instance" "assessment_instance" {
     Name = "Hardened-prod-instance"
   }
 }
+
+resource "aws_shield_protection" "assessment_shield_protection" {
+  name         = "assessment-shield-protection"
+  resource_arn = aws_instance.assessment_instance.arn
+}
+
+
+resource "aws_inspector_assessment_template" "assessment" {
+  name               = "example-assessment"
+  duration           = 3600
+  rules_package_arns = ["arn:aws:inspector:${var.aws_region}:${var.aws_account_id}:rulespackage/0-xxxxxxxxxx"]
+  target_arn         = aws_instance.assessment_instance.arn
+}

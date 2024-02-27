@@ -45,6 +45,9 @@ resource "aws_instance" "bastion" {
                 yum install -y amazon-ssm-agent
                 systemctl enable amazon-ssm-agent
                 systemctl start amazon-ssm-agent
+		yum install fail2ban -y
+                systemctl start fail2ban
+                systemctl enable fail2ban
 		amazon-linux-extras install -y kernel-ng
 		NEW_KERNEL=$(rpm -q kernel-ng | tail -n 1)
                 CURRENT_KERNEL=$(uname -r)
