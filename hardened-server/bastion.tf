@@ -87,3 +87,17 @@ resource "aws_security_group" "bastion_sg" {
     Name = "BastionSecurityGroup"
   }
 }
+
+resource "aws_inspector_assessment_template" "bastion" {
+  name               = "example-bastion"
+  duration           = 3600
+  rules_package_arns = ["arn:aws:inspector:${var.aws_region}:${var.aws_account_id}:rulespackage/0-xxxxxxxxxx"]
+  target_arn         = aws_instance.bastion.arn
+}
+
+resource "aws_shield_protection" "bastion_shield_protection" {
+  name         = "bastion-shield-protection"
+  resource_arn = aws_instance.bastion.arn
+}
+
+
