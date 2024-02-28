@@ -3,7 +3,7 @@ echo "userdata-start"
 yum update -y
 yum upgrade -y
 wait
-yum install -y ansible git nginx aide
+yum install -y ansible git nginx aide cronie cronie-anacron
 sed -i 's/SELINUX=permissive/SELINUX=enforcing/g' /etc/selinux/config
 setenforce 1
 systemctl enable nginx
