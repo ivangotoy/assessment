@@ -1,19 +1,13 @@
-data "aws_ami" "amazon_linux_2" {
-  most_recent = true
-
+data "aws_ami" "latest_amazon_linux" {
+  owners = ["amazon"]
   filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
-  }
-
-  filter {
-    name   = "owner-alias"
-    values = ["amazon"]
+    name   = "image-id"
+    values = ["ami-0440d3b780d96b29d"]
   }
 }
 
-resource "aws_iam_role" "ssm_ec2_role" {
-  name = "SSM_EC2_Role"
+resource "aws_iam_role" "ssm_role" {
+  name = "my-ssm-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -29,96 +23,69 @@ resource "aws_iam_role" "ssm_ec2_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "ssm_managed_instance_core" {
-  role       = aws_iam_role.ssm_ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+resource "aws_iam_role_policy_attachment" "ssm_role_policy_attachment" {
+  role       = aws_iam_role.ssm_role.name
+  policy_arn = "arn:aws:iam::${var.aws_account_id}:policy/SSMSessionManagerPolicy"
+}
+
+resource "aws_iam_instance_profile" "ssm_instance_profile" {
+  name = "my-ssm-instance-profile"
+  role = aws_iam_role.ssm_role.name
 }
 
 resource "aws_instance" "assessment_instance" {
-  ami           = data.aws_ami.amazon_linux_2.id
-  instance_type = "t2.micro"
+  ami                         = data.aws_ami.latest_amazon_linux.id
+  instance_type               = "t2.micro"
+  subnet_id                   = "subnet-0305d567c5d72e99b"
+  key_name                    = "AssesmentKey"
+  security_groups             = [aws_security_group.instance_sg.id]
+  associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
 
-  user_data = <<-EOF
-                #!/bin/bash
-                yum update -y
-                yum upgrade -y
-                amazon-linux-extras install -y kernel-ng
-                amazon-linux-extras install nginx1.12 -y
-                systemctl start nginx
-                systemctl enable nginx
-
-		yum install -y selinux-policy selinux-policy-targeted
-                setenforce 1
-                sed -i 's/^SELINUX=disabled/SELINUX=enforcing/' /etc/selinux/config
-                sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config
-
-                yum install -y amazon-ssm-agent
-                systemctl enable amazon-ssm-agent
-                systemctl start amazon-ssm-agent
-
-                sudo yum install fail2ban -y
-                sudo systemctl start fail2ban
-                sudo systemctl enable fail2ban
-                
-                sudo amazon-linux-extras install ansible2 -y
-
-                echo '<!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Success</title>
-                </head>
-                <body>
-                    <h1>Congratulations, you've reached the hardened instance!</h1>
-                </body>
-                </html>' | sudo tee /usr/share/nginx/html/index.html
-
-                echo 'server {
-                    listen 80;
-                    server_name _;
-                    return 301 https://\$host\$request_uri;
-                }
-
-                server {
-                    listen 443 ssl;
-                    server_name _;
-
-                    ssl_certificate     /etc/nginx/ssl/nginx.crt;
-                    ssl_certificate_key /etc/nginx/ssl/nginx.key;
-
-                    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-                    add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://trustedscripts.example.com; object-src 'none';";
-                    add_header X-XSS-Protection "1; mode=block";
-
-                    location / {
-                        root   /usr/share/nginx/html;
-                        index  index.html index.htm;
-                    }
-                }' | sudo tee /etc/nginx/conf.d/default.conf
-
-                sudo mkdir -p /etc/nginx/ssl
-                sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt -subj "/CN=localhost"
-
-                sudo systemctl reload nginx
-
-                sudo reboot
-              EOF
+  user_data = file("userdata.sh")
 
   tags = {
-    Name = "Hardened-prod-instance"
+    Name   = "Hardened-prod-instance",
+    Backup = "true"
   }
 }
 
-resource "aws_shield_protection" "assessment_shield_protection" {
-  name         = "assessment-shield-protection"
-  resource_arn = aws_instance.assessment_instance.arn
+resource "aws_security_group" "alb_sg" {
+  name        = "assessment_alb_sg"
+  description = "Security group for ALB"
+  vpc_id      = "vpc-0a17825ff0ea85766"
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
+resource "aws_security_group" "instance_sg" {
+  name        = "assessment_instance_sg"
+  description = "Security group for EC2 instance"
+  vpc_id      = "vpc-0a17825ff0ea85766"
 
-resource "aws_inspector_assessment_template" "assessment" {
-  name               = "example-assessment"
-  duration           = 3600
-  rules_package_arns = ["arn:aws:inspector:${var.aws_region}:${var.aws_account_id}:rulespackage/0-xxxxxxxxxx"]
-  target_arn         = aws_instance.assessment_instance.arn
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
