@@ -30,3 +30,5 @@ TODO:
 - cloudwatch alarms and cloudtrail
 
 - sns on events
+
+- crowdsec https://www.crowdsec.net/blog/protect-your-applications-with-aws-waf-and-crowdsec
