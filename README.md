@@ -14,3 +14,17 @@ Used for educational and assessment purposes only, no liability taken or given.
 6. AWS SSM - operational
 
 7. AIDE - deployed
+
+TODO:
+
+- custom AMI / dockerize - musl based for even less attack vectors
+
+- aws shield
+
+- aws guardduty
+
+- aws inspector
+
+- cloudwatch alarms and cloudtrail
+
+- sns on events
