@@ -15,6 +15,8 @@ Used for educational and assessment purposes only, no liability taken or given.
 
 7. AIDE - deployed
 
+8. SElinux - enforcing
+
 TODO:
 
 - custom AMI / dockerize - musl based for even less attack vectors
