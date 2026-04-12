@@ -1,3 +1,6 @@
+> ⚠️ **Mirror.** Primary repository: [git.digtvbg.com](https://git.digtvbg.com/ivangotoy/assessment)
+> Development, issues, and PRs happen there. The GitHub repo is read-only.
+
 # assessment
 
 Used for educational and assessment purposes only, no liability taken or given.
