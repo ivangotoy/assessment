@@ -1,5 +1,6 @@
-> ⚠️ **Mirror.** Primary repository: [git.digtvbg.com](https://git.digtvbg.com/ivangotoy/assessment)
-> Development, issues, and PRs happen there. The GitHub repo is read-only.
+> [!NOTE]
+> 🏡 **Home:** [git.digtvbg.com/ivangotoy/assessment](https://git.digtvbg.com/ivangotoy/assessment), where code, issues and releases live.
+> 🪞 **Mirror:** [github.com/ivangotoy/assessment](https://github.com/ivangotoy/assessment), read-only, synced automatically.
 
 # assessment
 
