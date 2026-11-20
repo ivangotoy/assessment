@@ -1,6 +1,5 @@
-> [!NOTE]
-> 🏡 **Home:** [git.digtvbg.com/ivangotoy/assessment](https://git.digtvbg.com/ivangotoy/assessment), where code, issues and releases live.
-> 🪞 **Mirror:** [github.com/ivangotoy/assessment](https://github.com/ivangotoy/assessment), read-only, synced automatically.
+> 🏠 **Home:** [git.digtvbg.com/ivangotoy/assessment](https://git.digtvbg.com/ivangotoy/assessment)\
+> 🔄 **Mirror:** [github.com/ivangotoy/assessment](https://github.com/ivangotoy/assessment) (read-only)
 
 # assessment
 
